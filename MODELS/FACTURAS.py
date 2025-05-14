@@ -1,15 +1,15 @@
-from CLIENTES import Cliente
+class Factura:
+    facturas = []  # Lista en memoria
 
-class Facturas:
-    def __init__(self, id_factura, fecha_factura, cliente):
-        self.id_factura = id_factura
-        self.fecha_factura = fecha_factura
-        self.cliente = cliente
-        self.productos = []
-        self.total = 0.0
+    def __init__(self, cliente, producto, cantidad):
+        self.cliente = cliente  # Objeto Cliente
+        self.producto = producto  # Lista de objetos Producto
+        self.cantidad = cantidad
+        self.total = sum(p.precio for p in producto)
 
-def Agregar_Productos(self, productos):
-    self.prductos.append(productos)
-   
+    def guardar(self):
+        Factura.facturas.append(self)
 
-    
+    @staticmethod
+    def obtener_por_cliente(id_cliente):
+        return [f for f in Factura.facturas if f.cliente.id == id_cliente]

@@ -1,21 +1,18 @@
 class Cliente:
-    def __init__(self, cedula, nombre):
-        self.cedula = cedula
+    clientes_registrados = []  # Lista estática para simular "base de datos"
+
+    def __init__(self, nombre, direccion, telefono):
         self.nombre = nombre
-        self.clientes = []#Lista vacia que almacena los datos de los clientes
+        self.direccion = direccion
+        self.telefo = telefono
 
+    def guardar(self):
+        Cliente.clientes_registrados.append(self)
 
-def agregar_cliente(self, cliente):
-    clientes.append(cliente)
+    @staticmethod
+    def obtener_todos():
+        return Cliente.clientes_registrados
 
-def listar_clientes(self):
-    return clientes
-
-#Usa una expresión generadora (c for c in clientes) que recorre la lista y compara la cédula.
-# next() retorna el primer cliente que coincide. Si no encuentra ninguno, devuelve None.
-def buscar_cliente(self, cedula):
-    return next((c for c in clientes if c.cedula == cedula), None)
-
-def eliminar_cliente(self, cedula):
-    global clientes #Usamos global porque vamos a modificar la lista global (no solo leerla).
-    clientes = [c for c in clientes if c.cedula != cedula] #Esto crea una nueva lista excluyendo al cliente cuya cédula sea igual a la que pasamos.
+    @staticmethod
+    def eliminar(id):
+        Cliente.clientes_registrados = [c for c in Cliente.clientes_registrados if c.id != id]

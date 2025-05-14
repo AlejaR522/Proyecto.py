@@ -1,34 +1,114 @@
-# interfaz.py
+# interfaces/productos_gui.py
+from tkinter import *
+from tkinter import ttk, messagebox
+import sqlite3
 
-import tkinter as tk
-from tkinter import ttk
-from MODELS.PRODUCTOS import Producto  # importa tu modelo
+class VentanaProductos:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Gestión de Productos")
+        self.root.geometry("600x500")
 
-# Crea productos de prueba
-productos = [
-    Producto("Camisa", 50000, 20),
-    Producto("Pantalón", 75000, 15),
-    Producto("Zapatos", 120000, 10)
-]
+        self.nombre_var = StringVar()
+        self.precio_var = StringVar()
+        self.stock_var = StringVar()
 
-# Función para mostrar productos en el widget Text
-def mostrar_productos():
-    texto.delete("1.0", tk.END)  # Limpia el Text antes de mostrar
-    for p in productos:
-        texto.insert(tk.END, p.mostrar())
+        Label(root, text="Gestión de Productos", font=("Times New Roman", 16)).pack(pady=10)
 
-# Configurar ventana principal
-ventana = tk.Tk()
-ventana.title("Inventario de Productos")
-ventana.geometry("400x300")
+        Label(root, text="Nombre del Producto").pack()
+        Entry(root, textvariable=self.nombre_var).pack()
 
-# Botón para mostrar productos
-btn_mostrar = ttk.Button(ventana, text="Mostrar Productos", command=mostrar_productos)
-btn_mostrar.pack(pady=10)
+        Label(root, text="Precio").pack()
+        Entry(root, textvariable=self.precio_var).pack()
 
-# Área de texto para mostrar los productos
-texto = tk.Text(ventana, height=15, width=45)
-texto.pack(pady=10)
+        Label(root, text="Stock").pack()
+        Entry(root, textvariable=self.stock_var).pack()
 
-# Ejecutar la ventana
-ventana.mainloop()
+        Frame_botones = Frame(root)
+        Frame_botones.pack(pady=10)
+
+        Button(Frame_botones, text="Guardar", command=self.guardar_producto).grid(row=0, column=0, padx=5)
+        Button(Frame_botones, text="Actualizar", command=self.actualizar_producto).grid(row=0, column=1, padx=5)
+        Button(Frame_botones, text="Eliminar", command=self.eliminar_producto).grid(row=0, column=2, padx=5)
+
+        self.tabla = ttk.Treeview(root, columns=("ID", "Nombre", "Precio", "Stock"), show="headings")
+        self.tabla.heading("ID", text="ID")
+        self.tabla.heading("Nombre", text="Nombre")
+        self.tabla.heading("Precio", text="Precio")
+        self.tabla.heading("Stock", text="Stock")
+
+        self.tabla.column("ID", width=150)
+        self.tabla.column("Nombre", width=150)
+        self.tabla.column("Precio", width=80)
+        self.tabla.column("Stock", width=100)
+
+        self.tabla.pack(pady=20)
+
+        self.tabla.bind("<ButtonRelease-1>", self.seleccionar_fila)
+
+        self.mostrar_productos()
+
+    def conectar(self):
+        return sqlite3.connect("tienda.db")
+
+    def guardar_producto(self):
+        conn = self.conectar()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO productos (nombre, precio, stock) VALUES (?, ?, ?)",
+                        (self.nombre_var.get(), self.precio_var.get(), self.stock_var.get()))
+        conn.commit()
+        conn.close()
+        messagebox.showinfo("Guardado", "Producto guardado correctamente")
+        self.limpiar_campos()
+        self.mostrar_productos()
+
+    def mostrar_productos(self):
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+        conn = self.conectar()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM productos")
+        for fila in cursor.fetchall():
+            self.tabla.insert("", END, values=fila)
+        conn.close()
+
+    def seleccionar_fila(self, event):
+        seleccion = self.tabla.focus()
+        if seleccion:
+            valores = self.tabla.item(seleccion, "values")
+            self.id_seleccionado = valores[0]
+            self.nombre_var.set(valores[1])
+            self.precio_var.set(valores[2])
+            self.stock_var.set(valores[3])
+
+    def actualizar_producto(self):
+        try:
+            conn = self.conectar()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE productos SET nombre=?, precio=?, stock=? WHERE id_producto=?",
+                            (self.nombre_var.get(), self.precio_var.get(), self.stock_var.get(), self.id_seleccionado))
+            conn.commit()
+            conn.close()
+            messagebox.showinfo("Actualizado", "Producto actualizado correctamente")
+            self.limpiar_campos()
+            self.mostrar_productos()
+        except AttributeError:
+            messagebox.showerror("Error", "Selecciona un producto para actualizar")
+
+    def eliminar_producto(self):
+        try:
+            conn = self.conectar()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM productos WHERE id_producto=?", (self.id_seleccionado,))
+            conn.commit()
+            conn.close()
+            messagebox.showinfo("Eliminado", "Producto eliminado correctamente")
+            self.limpiar_campos()
+            self.mostrar_productos()
+        except AttributeError:
+            messagebox.showerror("Error", "Selecciona un producto para eliminar")
+
+    def limpiar_campos(self):
+        self.nombre_var.set("")
+        self.precio_var.set("")
+        self.stock_var.set("")
