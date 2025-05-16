@@ -4,8 +4,10 @@ from tkinter import *
 from tkinter import messagebox, ttk
 
 class VentanaClientes:
-    def __init__(self, root):
+    def __init__(self, root, ventana_cli):
         self.root = root
+        self.ventana_cli = ventana_cli
+
         self.root.title("Gestión de Clientes")
         self.root.geometry("600x500")
 
@@ -37,6 +39,9 @@ class VentanaClientes:
         Button(Frame_botones, text="Guardar", command=self.guardar_cliente).grid(row=0, column=0, padx=5)
         Button(Frame_botones, text="Actualizar", command=self.actualizar_cliente).grid(row=0, column=1, padx=5)
         Button(Frame_botones, text="Eliminar", command=self.eliminar_cliente).grid(row=0, column=2, padx=5)
+        btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
+        btn_volver.pack(pady=20)
+
 
         # Tabla de clientes
         self.tabla = ttk.Treeview(root, columns=("Nombre", "Dirección", "Teléfono"), show='headings')
@@ -53,6 +58,7 @@ class VentanaClientes:
 
         # Evento de selección en la tabla
         self.tabla.bind("<ButtonRelease-1>", self.seleccionar_fila)
+
 
     def guardar_cliente(self):
         nombre = self.nombre_var.get()
@@ -105,6 +111,10 @@ class VentanaClientes:
         # Insertar clientes
         for cliente in self.clientes:
             self.tabla.insert('', END, values=cliente)
+
+    def volver(self):
+        self.root.destroy()      # Cierra Ventana B
+        self.ventana_cli.deiconify() # Muestra nuevamente Ventana A
 
     def seleccionar_fila(self, event):
         seleccion = self.tabla.selection()

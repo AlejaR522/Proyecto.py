@@ -77,4 +77,3 @@ def limpiar_tabla():
     conexion.commit()
     conexion.close()
 # Llamada inicial para crear la tabla
-

@@ -19,30 +19,32 @@ class VentanaPrincipal:
         marco_botones.pack(pady=20)
 
         # Botones de navegación
-        btn_productos = tk.Button(marco_botones, text="Gestionar Productos",font=("Times new Roman",16),width=18,bg="peru",fg="white", command=self.abrir_productos)
+        btn_productos = tk.Button(marco_botones, text="Gestionar Productos",font=("Times new Roman",16),width=18,bg="moccasin",fg="white", command=self.abrir_productos)
         btn_productos.grid(row=0, column=0, pady=5)
 
-        btn_clientes = tk.Button(marco_botones, text="Gestionar Clientes",font=("Times new Roman",16),width=18,bg="turquoise3",fg="white", command=self.abrir_clientes)
+        btn_clientes = tk.Button(marco_botones, text="Gestionar Clientes",font=("Times new Roman",16),width=18,bg="beige",fg="white", command=self.abrir_clientes)
         btn_clientes.grid(row=1, column=0, pady=5)
 
-        btn_facturas = tk.Button(marco_botones, text="Gestionar Facturas", font=("Times new Roman",16),width=18,bg="chartreuse4",fg="white", command=self.abrir_facturas)
+        btn_facturas = tk.Button(marco_botones, text="Gestionar Facturas", font=("Times new Roman",16),width=18,bg="peru",fg="white", command=self.abrir_facturas)
         btn_facturas.grid(row=2, column=0, pady=5)
 
         # Botón salir
-        btn_salir = tk.Button(root, text="Salir",font=("Times new Roman",13),width=8, command=root.quit, bg="red3", fg="White")
-        btn_salir.pack(pady=20)
+        btn_salir = tk.Button(root, text="Salir",font=("Times new Roman",13),width=5, command=root.quit, bg="brown", fg="White")
+        btn_salir.pack(pady=10)
 
     def abrir_productos(self):
+        self.root.withdraw()
         nueva_ventana = Toplevel(self.root)           # Nueva ventana secundaria
-        VentanaProductos(nueva_ventana)               # Llama la clase que define la interfaz de 
-        
-
+        VentanaProductos(nueva_ventana, self.root)  # Pasa self.root como ventana_principal
+    
 
     def abrir_clientes(self):
+        self.root.withdraw()
         nueva_ventana = Toplevel(self.root)           # Nueva ventana secundaria
-        VentanaClientes(nueva_ventana)               # Llama la clase que define la interfaz de 
+        VentanaClientes(nueva_ventana, self.root)               # Llama la clase que define la interfaz de 
 
     def abrir_facturas(self):
+        self.root.withdraw()  # Oculta ventana principal
         nueva_ventana = Toplevel(self.root)           # Nueva ventana secundaria
-        VentanaFactura(nueva_ventana)               # Llama la clase que define la interfaz de 
+        VentanaFactura(nueva_ventana, self.root)               # Llama la clase que define la interfaz de 
 

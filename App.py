@@ -13,6 +13,5 @@ def abrir_clientes(self):
     self.root.withdraw()  # Oculta ventana principal
     ventana_clientes = tk.Toplevel(self.root)
     VentanaClientes(ventana_clientes, self.root)  # Pasa referencia
-
 if __name__ == "__main__":
     run_app()  # Ejecuta todo desde aquí

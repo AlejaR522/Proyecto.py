@@ -1,11 +1,14 @@
 # interfaces/productos_gui.py
+from logging import root
 from tkinter import *
 from tkinter import ttk, messagebox
 import sqlite3
 
 class VentanaProductos:
-    def __init__(self, root):
+    def __init__(self, root,ventana_principal):
         self.root = root
+        self.ventana_principal = ventana_principal
+
         self.root.title("Gestión de Productos")
         self.root.geometry("600x500")
 
@@ -24,13 +27,16 @@ class VentanaProductos:
         Label(root, text="Stock").pack()
         Entry(root, textvariable=self.stock_var).pack()
 
+
         Frame_botones = Frame(root)
         Frame_botones.pack(pady=10)
 
         Button(Frame_botones, text="Guardar", command=self.guardar_producto).grid(row=0, column=0, padx=5)
         Button(Frame_botones, text="Actualizar", command=self.actualizar_producto).grid(row=0, column=1, padx=5)
         Button(Frame_botones, text="Eliminar", command=self.eliminar_producto).grid(row=0, column=2, padx=5)
-
+        btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
+        btn_volver.pack(pady=20)
+        
         self.tabla = ttk.Treeview(root, columns=("ID", "Nombre", "Precio", "Stock"), show="headings")
         self.tabla.heading("ID", text="ID")
         self.tabla.heading("Nombre", text="Nombre")
@@ -62,6 +68,10 @@ class VentanaProductos:
         self.limpiar_campos()
         self.mostrar_productos()
 
+    def volver(self):
+        self.root.destroy()      # Cierra Ventana B
+        self.ventana_principal.deiconify() # Muestra nuevamente Ventana A
+
     def mostrar_productos(self):
         for item in self.tabla.get_children():
             self.tabla.delete(item)
@@ -82,20 +92,34 @@ class VentanaProductos:
             self.stock_var.set(valores[3])
 
     def actualizar_producto(self):
-        try:
-            conn = self.conectar()
-            cursor = conn.cursor()
-            cursor.execute("UPDATE productos SET nombre=?, precio=?, stock=? WHERE id_producto=?",
-                            (self.nombre_var.get(), self.precio_var.get(), self.stock_var.get(), self.id_seleccionado))
-            conn.commit()
-            conn.close()
-            messagebox.showinfo("Actualizado", "Producto actualizado correctamente")
-            self.limpiar_campos()
-            self.mostrar_productos()
-        except AttributeError:
+        if not hasattr(self, 'id_seleccionado'):
             messagebox.showerror("Error", "Selecciona un producto para actualizar")
+            return
+    
+        # Validación de campos
+        try:
+            precio = float(self.precio_var.get())
+            stock = int(self.stock_var.get())
+        except ValueError:
+            messagebox.showerror("Error", "Precio debe ser un número y Stock un entero")
+            return
+    
+        conn = self.conectar()
+        cursor = conn.cursor()
+        try:
+                cursor.execute("UPDATE productos SET nombre=?, precio=?, stock=? WHERE id=?",
+                        (self.nombre_var.get(), precio, stock, self.id_seleccionado))
+                conn.commit()
+                messagebox.showinfo("Actualizado", "Producto actualizado correctamente")
+                self.mostrar_productos()
+                self.limpiar_campos()
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", f"No se pudo actualizar: {str(e)}")
+        finally:
+            conn.close()
 
-    def eliminar_producto(self):
+
+    def eliminar_producto(self): 
         try:
             conn = self.conectar()
             cursor = conn.cursor()

@@ -3,8 +3,10 @@ from tkinter import messagebox, ttk
 from Databases import obtener_producto_por_nombre, actualizar_stock_producto
 
 class VentanaFactura:
-    def __init__(self, root):
+    def __init__(self, root, ventana_fact):
         self.root = root
+        self.ventana_fact = ventana_fact
+    
         self.root.title("Factura")
         self.root.geometry("600x500")
 
@@ -24,6 +26,8 @@ class VentanaFactura:
         Entry(root, textvariable=self.cantidad_var).pack()
 
         Button(root, text="Generar Factura", command=self.generar_factura).pack(pady=15)
+        btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
+        btn_volver.pack(pady=20)
 
         # Tabla para mostrar factura
         self.tabla = ttk.Treeview(root, columns=("Cliente", "Producto", "Cantidad", "Total"), show="headings")
@@ -38,6 +42,10 @@ class VentanaFactura:
         self.tabla.column("Total", width=100)
 
         self.tabla.pack(pady=20)
+
+    def volver(self):
+        self.root.destroy()      # Cierra Ventana B
+        self.ventana_fact.deiconify() # Muestra nuevamente Ventana A
 
     def generar_factura(self):
         cliente = self.cliente_var.get()
