@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import messagebox, ttk
 from Databases import obtener_producto_por_nombre, actualizar_stock_producto
 
+
+
 class VentanaFactura:
     def __init__(self, root, ventana_fact):
         self.root = root
@@ -10,14 +12,16 @@ class VentanaFactura:
         self.root.title("Factura")
         self.root.geometry("600x500")
 
-        Label(root, text="Generar Factura", font=("Times New Roman", 16)).pack(pady=10)
+        Label(root, text="Generar Factura", font=("Times New Roman", 16)).pack(pady=15)
 
         self.cliente_var = StringVar()
         self.producto_var = StringVar()
         self.cantidad_var = StringVar()
+        
 
-        Label(root, text="Nombre del Cliente").pack()
+        Label(root, text="Cliente").pack()
         Entry(root, textvariable=self.cliente_var).pack()
+
 
         Label(root, text="Producto").pack()
         Entry(root, textvariable=self.producto_var).pack()
@@ -25,18 +29,16 @@ class VentanaFactura:
         Label(root, text="Cantidad").pack()
         Entry(root, textvariable=self.cantidad_var).pack()
 
-        Button(root, text="Generar Factura", command=self.generar_factura).pack(pady=15)
+        Button(root, text="Generar Factura", command=self.generar_factura,bg="green4",fg="white").pack(pady=15)
         btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
         btn_volver.pack(pady=20)
 
         # Tabla para mostrar factura
-        self.tabla = ttk.Treeview(root, columns=("Cliente", "Producto", "Cantidad", "Total"), show="headings")
-        self.tabla.heading("Cliente", text="Cliente")
+        self.tabla = ttk.Treeview(root, columns=( "Producto", "Cantidad", "Total"), show="headings")
         self.tabla.heading("Producto", text="Producto")
         self.tabla.heading("Cantidad", text="Cantidad")
         self.tabla.heading("Total", text="Total")
 
-        self.tabla.column("Cliente", width=150)
         self.tabla.column("Producto", width=150)
         self.tabla.column("Cantidad", width=80)
         self.tabla.column("Total", width=100)
@@ -47,7 +49,8 @@ class VentanaFactura:
         self.root.destroy()      # Cierra Ventana B
         self.ventana_fact.deiconify() # Muestra nuevamente Ventana A
 
-    def generar_factura(self):
+    def generar_factura(self, VentanaClientes):
+        self.clientes = []
         cliente = self.cliente_var.get()
         producto_nombre = self.producto_var.get()
         cantidad = self.cantidad_var.get()
@@ -84,3 +87,8 @@ class VentanaFactura:
         actualizar_stock_producto(producto_nombre, stock - cantidad)
 
         messagebox.showinfo("Factura", f"Factura generada exitosamente\nTotal a pagar: ${total:,.0f}")
+
+    def limpiar_campos(self):
+        self.cliente_var.set("")
+        self.producto_var.set("")
+        self.cantidad_var.set("")

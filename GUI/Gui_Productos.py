@@ -16,7 +16,7 @@ class VentanaProductos:
         self.precio_var = StringVar()
         self.stock_var = StringVar()
 
-        Label(root, text="Gestión de Productos", font=("Times New Roman", 16)).pack(pady=10)
+        Label(root, text="Gestión de Productos", font=("Times New Roman", 18),fg="saddle brown").pack(pady=15)
 
         Label(root, text="Nombre del Producto").pack()
         Entry(root, textvariable=self.nombre_var).pack()
@@ -29,11 +29,11 @@ class VentanaProductos:
 
 
         Frame_botones = Frame(root)
-        Frame_botones.pack(pady=10)
+        Frame_botones.pack(pady=15)
 
-        Button(Frame_botones, text="Guardar", command=self.guardar_producto).grid(row=0, column=0, padx=5)
-        Button(Frame_botones, text="Actualizar", command=self.actualizar_producto).grid(row=0, column=1, padx=5)
-        Button(Frame_botones, text="Eliminar", command=self.eliminar_producto).grid(row=0, column=2, padx=5)
+        Button(Frame_botones, text="Guardar", command=self.guardar_producto,bg="NavajoWhite3",fg="white").grid(row=0, column=0, padx=5)
+        Button(Frame_botones, text="Actualizar", command=self.actualizar_producto,bg="NavajoWhite3",fg="white").grid(row=0, column=1, padx=5)
+        Button(Frame_botones, text="Eliminar", command=self.eliminar_producto,bg="red4",fg="white").grid(row=0, column=2, padx=5)
         btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
         btn_volver.pack(pady=20)
         
@@ -44,9 +44,9 @@ class VentanaProductos:
         self.tabla.heading("Stock", text="Stock")
 
         self.tabla.column("ID", width=150)
-        self.tabla.column("Nombre", width=150)
-        self.tabla.column("Precio", width=80)
-        self.tabla.column("Stock", width=100)
+        self.tabla.column("Nombre", width=180)
+        self.tabla.column("Precio", width=90)
+        self.tabla.column("Stock", width=110)
 
         self.tabla.pack(pady=20)
 

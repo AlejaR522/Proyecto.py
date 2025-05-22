@@ -15,43 +15,43 @@ class VentanaClientes:
         self.clientes = []
 
         # Variables
+        self.id = StringVar()
         self.nombre_var = StringVar()
-        self.direccion_var = StringVar()
         self.telefono_var = StringVar()
 
         # Título
-        Label(root, text="Gestión de Clientes", font=("Arial", 16)).pack(pady=10)
+        Label(root, text="Gestión de Clientes", font=("Times new Roman", 16)).pack(pady=15)
 
         # Entradas
         Label(root, text="Nombre Completo").pack()
         Entry(root, textvariable=self.nombre_var).pack()
 
-        Label(root, text="Dirección").pack()
-        Entry(root, textvariable=self.direccion_var).pack()
+        Label(root, text="ID:"). pack()
+        Entry (root, textvariable=self.id).pack()
+
 
         Label(root, text="Teléfono").pack()
         Entry(root, textvariable=self.telefono_var).pack()
 
         # Botones
         Frame_botones = Frame(root)
-        Frame_botones.pack(pady=10)
+        Frame_botones.pack(pady=15)
 
-        Button(Frame_botones, text="Guardar", command=self.guardar_cliente).grid(row=0, column=0, padx=5)
-        Button(Frame_botones, text="Actualizar", command=self.actualizar_cliente).grid(row=0, column=1, padx=5)
-        Button(Frame_botones, text="Eliminar", command=self.eliminar_cliente).grid(row=0, column=2, padx=5)
+        Button(Frame_botones, text="Guardar", command=self.guardar_cliente,bg="NavajoWhite3",fg="white").grid(row=0, column=0, padx=5)
+        Button(Frame_botones, text="Actualizar", command=self.actualizar_cliente,bg="NavajoWhite3",fg="white").grid(row=0, column=1, padx=5)
+        Button(Frame_botones, text="Eliminar", command=self.eliminar_cliente,bg="red4",fg="white").grid(row=0, column=2, padx=5)
         btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
         btn_volver.pack(pady=20)
 
 
         # Tabla de clientes
-        self.tabla = ttk.Treeview(root, columns=("Nombre", "Dirección", "Teléfono"), show='headings')
+        self.tabla = ttk.Treeview(root, columns=("ID","Nombre", "Teléfono"), show='headings')
+        self.tabla.heading("ID", text="ID")
         self.tabla.heading("Nombre", text="Nombre")
-        self.tabla.heading("Dirección", text="Dirección")
         self.tabla.heading("Teléfono", text="Teléfono")
 
-
+        self.tabla.column("ID", width=60)
         self.tabla.column("Nombre", width=150)
-        self.tabla.column("Dirección", width=120)
         self.tabla.column("Teléfono", width=120)
 
         self.tabla.pack(pady=20)
@@ -61,16 +61,16 @@ class VentanaClientes:
 
 
     def guardar_cliente(self):
+        id = self.id.get()
         nombre = self.nombre_var.get()
-        direccion = self.direccion_var.get()
         telefono = self.telefono_var.get()
 
-        if nombre == "" or direccion == "" or telefono == "":
+        if nombre == "" or id == "" or telefono == "":
             messagebox.showwarning("Campos Vacíos", "Por favor complete todos los campos.")
             return
 
         # Guardar en memoria
-        self.clientes.append((nombre, direccion, telefono))
+        self.clientes.append((id, nombre, telefono))
         self.actualizar_tabla()
         self.limpiar_campos()
         messagebox.showinfo("Guardar", "Cliente guardado exitosamente.")
@@ -84,7 +84,7 @@ class VentanaClientes:
         idx = self.tabla.index(seleccion[0])
         self.clientes[idx] = (
             self.nombre_var.get(),
-            self.direccion_var.get(),
+            self.id.get(),
             self.telefono_var.get()
         )
         self.actualizar_tabla()
@@ -125,7 +125,11 @@ class VentanaClientes:
             self.direccion_var.set(valores[1])
             self.telefono_var.set(valores[2])
 
+    # Añade este método para obtener la lista de clientes
+    def obtener_clientes(self):
+        return self.clientes  # Retorna la lista de clientes [(id, nombre, teléfono), ...]
+
     def limpiar_campos(self):
         self.nombre_var.set("")
-        self.direccion_var.set("")
+        self.id.set("")
         self.telefono_var.set("")

@@ -1,3 +1,6 @@
+#Raquel Eunice Martines daza-
+#Alejandra Tibidor-
+
 import tkinter as tk
 from GUI.Gui_Clientes import VentanaClientes
 from GUI.main import VentanaPrincipal
