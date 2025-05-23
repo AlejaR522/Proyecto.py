@@ -1,94 +1,153 @@
 from tkinter import *
 from tkinter import messagebox, ttk
 from Databases import obtener_producto_por_nombre, actualizar_stock_producto
-
-
+from MODELS.CLIENTES import Cliente
+from MODELS.FACTURAS import Factura
+from MODELS.PRODUCTOS import Producto
 
 class VentanaFactura:
     def __init__(self, root, ventana_fact):
         self.root = root
         self.ventana_fact = ventana_fact
-    
-        self.root.title("Factura")
-        self.root.geometry("600x500")
-
-        Label(root, text="Generar Factura", font=("Times New Roman", 16)).pack(pady=15)
-
-        self.cliente_var = StringVar()
-        self.producto_var = StringVar()
-        self.cantidad_var = StringVar()
+        self.items_factura = []  # Para almacenar productos temporales
         
+        self.root.title("Factura")
+        self.root.geometry("800x600")
 
-        Label(root, text="Cliente").pack()
-        Entry(root, textvariable=self.cliente_var).pack()
+        # Frame principal
+        main_frame = Frame(self.root)
+        main_frame.pack(fill=BOTH, expand=True, padx=20, pady=20)
 
+        Label(main_frame, text="Generar Factura", font=("Times New Roman", 16)).grid(row=0, column=0, columnspan=3, pady=15)
 
-        Label(root, text="Producto").pack()
-        Entry(root, textvariable=self.producto_var).pack()
+        # Cliente
+        Label(main_frame, text="Cliente:").grid(row=1, column=0, sticky=W)
+        self.cliente_cb = ttk.Combobox(main_frame, state="readonly")
+        self.cliente_cb.grid(row=1, column=1, sticky=EW, padx=5, pady=5)
+        self.actualizar_clientes()
 
-        Label(root, text="Cantidad").pack()
-        Entry(root, textvariable=self.cantidad_var).pack()
+        # Producto
+        Label(main_frame, text="Producto:").grid(row=2, column=0, sticky=W)
+        self.producto_cb = ttk.Combobox(main_frame)
+        self.producto_cb.grid(row=2, column=1, sticky=EW, padx=5, pady=5)
+        self.actualizar_productos()
 
-        Button(root, text="Generar Factura", command=self.generar_factura,bg="green4",fg="white").pack(pady=15)
-        btn_volver = ttk.Button(self.root, text="Volver", command=self.volver)
-        btn_volver.pack(pady=20)
+        # Cantidad
+        Label(main_frame, text="Cantidad:").grid(row=3, column=0, sticky=W)
+        self.cantidad_var = StringVar()
+        Entry(main_frame, textvariable=self.cantidad_var).grid(row=3, column=1, sticky=EW, padx=5, pady=5)
 
-        # Tabla para mostrar factura
-        self.tabla = ttk.Treeview(root, columns=( "Producto", "Cantidad", "Total"), show="headings")
+        # Botones
+        btn_frame = Frame(main_frame)
+        btn_frame.grid(row=4, column=0, columnspan=3, pady=10)
+
+        Button(btn_frame, text="Agregar Producto", command=self.agregar_producto, bg="blue", fg="white").pack(side=LEFT, padx=5)
+        Button(btn_frame, text="Generar Factura", command=self.generar_factura, bg="green4", fg="white").pack(side=LEFT, padx=5)
+        Button(btn_frame, text="Nueva Factura", command=self.limpiar_factura, bg="orange", fg="white").pack(side=LEFT, padx=5)
+        Button(btn_frame, text="Volver", command=self.volver).pack(side=LEFT, padx=5)
+
+        # Tabla para mostrar items de la factura
+        self.tabla = ttk.Treeview(main_frame, columns=("Producto", "Precio", "Cantidad", "Subtotal"), show="headings")
         self.tabla.heading("Producto", text="Producto")
+        self.tabla.heading("Precio", text="Precio Unitario")
         self.tabla.heading("Cantidad", text="Cantidad")
-        self.tabla.heading("Total", text="Total")
+        self.tabla.heading("Subtotal", text="Subtotal")
 
-        self.tabla.column("Producto", width=150)
-        self.tabla.column("Cantidad", width=80)
-        self.tabla.column("Total", width=100)
+        for col in ("Producto", "Precio", "Cantidad", "Subtotal"):
+            self.tabla.column(col, width=120, anchor=CENTER)
 
-        self.tabla.pack(pady=20)
+        self.tabla.grid(row=5, column=0, columnspan=3, pady=20, sticky=NSEW)
 
-    def volver(self):
-        self.root.destroy()      # Cierra Ventana B
-        self.ventana_fact.deiconify() # Muestra nuevamente Ventana A
+        # Total
+        self.total_var = StringVar()
+        self.total_var.set("Total: $0")
+        Label(main_frame, textvariable=self.total_var, font=("Arial", 12, "bold")).grid(row=6, column=0, columnspan=3)
 
-    def generar_factura(self, VentanaClientes):
-        self.clientes = []
-        cliente = self.cliente_var.get()
-        producto_nombre = self.producto_var.get()
+        # Configurar expansión
+        main_frame.columnconfigure(1, weight=1)
+        self.root.rowconfigure(0, weight=1)
+
+    def actualizar_clientes(self):
+        clientes = Cliente.obtener_todos()
+        self.cliente_cb['values'] = [f"{c.nombre} (ID: {c.id})" for c in clientes]
+
+    def actualizar_productos(self):
+        productos = Producto.obtener_todos()
+        self.producto_cb['values'] = [p.nombre for p in productos]  # Accede al atributo nombre
+
+    def agregar_producto(self):
+        producto_nombre = self.producto_cb.get()
         cantidad = self.cantidad_var.get()
 
-        if not cliente or not producto_nombre or not cantidad:
-            messagebox.showerror("Error", "Todos los campos son obligatorios")
+        if not producto_nombre or not cantidad:
+            messagebox.showerror("Error", "Debe seleccionar un producto y cantidad")
             return
 
         try:
             cantidad = int(cantidad)
+            if cantidad <= 0:
+                raise ValueError
         except ValueError:
-            messagebox.showerror("Error", "La cantidad debe ser un número")
+            messagebox.showerror("Error", "Cantidad debe ser un número positivo")
             return
 
         producto = obtener_producto_por_nombre(producto_nombre)
-
         if not producto:
             messagebox.showerror("Error", "Producto no encontrado")
             return
 
-        precio = float(producto[2])  # producto[2] = precio
-        stock = int(producto[3])     # producto[3] = inventario
+        precio = float(producto[2])
+        stock = int(producto[3])
 
         if cantidad > stock:
             messagebox.showerror("Error", f"Stock insuficiente. Disponible: {stock}")
             return
 
-        total = cantidad * precio
+        subtotal = precio * cantidad
+        self.items_factura.append((producto, cantidad))
 
-        # Mostrar en la tabla
-        self.tabla.insert('', 'end', values=(cliente, producto_nombre, cantidad, f"${total:,.0f}"))
+        # Actualizar tabla
+        self.tabla.insert('', 'end', values=(producto_nombre, f"${precio:,.2f}", cantidad, f"${subtotal:,.2f}"))
 
-        # Actualizar stock en base de datos
-        actualizar_stock_producto(producto_nombre, stock - cantidad)
+        # Actualizar total
+        total = sum(float(item[0][2]) * item[1] for item in self.items_factura)
+        self.total_var.set(f"Total: ${total:,.2f}")
 
-        messagebox.showinfo("Factura", f"Factura generada exitosamente\nTotal a pagar: ${total:,.0f}")
-
-    def limpiar_campos(self):
-        self.cliente_var.set("")
-        self.producto_var.set("")
+        # Limpiar campos
         self.cantidad_var.set("")
+        self.producto_cb.set("")
+
+    def generar_factura(self):
+        if not self.items_factura:
+            messagebox.showerror("Error", "Debe agregar al menos un producto")
+            return
+
+        cliente_idx = self.cliente_cb.current()
+        if cliente_idx == -1:
+            messagebox.showerror("Error", "Debe seleccionar un cliente")
+            return
+
+        cliente = Cliente.obtener_todos()[cliente_idx]
+        
+        # Crear factura
+        factura = Factura(cliente, self.items_factura)
+        factura_id = factura.guardar()
+
+        # Actualizar stocks
+        for producto, cantidad in self.items_factura:
+            actualizar_stock_producto(producto[1], int(producto[3]) - cantidad)
+
+        messagebox.showinfo("Éxito", f"Factura #{factura_id} generada\nTotal: ${factura.total:,.2f}")
+        self.limpiar_factura()
+
+    def limpiar_factura(self):
+        self.items_factura = []
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+        self.total_var.set("Total: $0")
+        self.cantidad_var.set("")
+        self.producto_cb.set("")
+
+    def volver(self):
+        self.root.destroy()
+        self.ventana_fact.deiconify()

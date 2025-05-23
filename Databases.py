@@ -1,13 +1,18 @@
+# Databases.py
 import sqlite3
 
-# Conexión y creación de tabla
+def get_db_connection():
+    """Crea y devuelve una conexión a la base de datos"""
+    return sqlite3.connect('Tienda.db')
+
 def connect():
-    conn = sqlite3.connect('Tienda.db')
+    """Crea la tabla de productos si no existe"""
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL,
+            nombre TEXT NOT NULL UNIQUE,
             precio REAL NOT NULL,
             stock INTEGER NOT NULL
         )
@@ -15,65 +20,77 @@ def connect():
     conn.commit()
     conn.close()
 
-# Insertar producto
+# Resto de funciones (sin cambios)
 def insertar_producto(nombre, precio, stock):
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
     cursor.execute("INSERT INTO productos (nombre, precio, stock) VALUES (?, ?, ?)",
                     (nombre, precio, stock))
-    conexion.commit()
-    conexion.close()
+    conn.commit()
+    producto_id = cursor.lastrowid
+    conn.close()
+    return producto_id
 
-# Obtener todos los productos
 def obtener_productos():
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM productos")
+    """Devuelve una lista de tuplas con los productos"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM productos ORDER BY nombre")
     productos = cursor.fetchall()
-    conexion.close()
+    conn.close()
     return productos
 
-# Obtener producto por nombre (para factura)
 def obtener_producto_por_nombre(nombre):
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
+    """Obtiene un producto por su nombre (para facturación)"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
     cursor.execute("SELECT * FROM productos WHERE nombre = ?", (nombre,))
     producto = cursor.fetchone()
-    conexion.close()
+    conn.close()
     return producto
 
-# Actualizar producto completo
+def obtener_producto_por_id(id):
+    """Obtiene un producto por su ID"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM productos WHERE id = ?", (id,))
+    producto = cursor.fetchone()
+    conn.close()
+    return producto
+
 def actualizar_producto(id, nombre, precio, stock):
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
+    """Actualiza un producto existente"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
     cursor.execute("""
-        UPDATE productos
+        UPDATE productos 
         SET nombre = ?, precio = ?, stock = ?
         WHERE id = ?
     """, (nombre, precio, stock, id))
-    conexion.commit()
-    conexion.close()
+    conn.commit()
+    conn.close()
 
-# Actualizar solo el stock de un producto (usado en factura)
 def actualizar_stock_producto(id, nuevo_stock):
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
+    """Actualiza solo el stock de un producto"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
     cursor.execute("UPDATE productos SET stock = ? WHERE id = ?", (nuevo_stock, id))
-    conexion.commit()
-    conexion.close()
+    conn.commit()
+    conn.close()
 
-# Eliminar producto
 def eliminar_producto(id):
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
+    """Elimina un producto de la BD"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
     cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
-    conexion.commit()
-    conexion.close()
+    conn.commit()
+    conn.close()
 
-def limpiar_tabla():
-    conexion = sqlite3.connect("Tienda.db")
-    cursor = conexion.cursor()
-    cursor.execute("DELETE FROM productos")
-    conexion.commit()
-    conexion.close()
-# Llamada inicial para crear la tabla
+def buscar_productos(termino):
+    """Busca productos por término (nombre)"""
+    conn = sqlite3.connect("Tienda.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM productos WHERE nombre LIKE ?", (f'%{termino}%',))
+    productos = cursor.fetchall()
+    conn.close()
+    return productos
